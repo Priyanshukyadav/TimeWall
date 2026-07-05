@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Absolute Wallpaper Timer</title>
+  <title>Aspirant Exam Countdown</title>
   <style>
     :root {
-      --bg: #06070b;
-      --text: #f5f7fb;
-      --muted: #8a90a4;
-      --accent: #7eb1ff;
-      --accent-strong: #4f7cff;
-      --border: rgba(255, 255, 255, 0.12);
-      --expired: #ff5e5e;
-      --shadow: 0 18px 70px rgba(0, 0, 0, 0.45);
+      --bg: #000000;
+      --panel: #121212;
+      --panel-border: #222222;
+      --text: #f7f7f7;
+      --muted: #8a8f97;
+      --accent: #ff3355;
+      --accent-soft: rgba(255, 51, 85, 0.16);
+      --shadow: 0 18px 70px rgba(0, 0, 0, 0.55);
     }
 
     * { box-sizing: border-box; }
@@ -23,9 +23,9 @@
       height: 100%;
       margin: 0;
       overflow: hidden;
-      background: radial-gradient(circle at top left, #151924 0%, var(--bg) 58%, #020306 100%);
+      background: var(--bg);
       color: var(--text);
-      font-family: "Segoe UI", Inter, Roboto, Arial, sans-serif;
+      font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
     }
 
     body {
@@ -36,13 +36,12 @@
     }
 
     .frame {
-      width: min(94vw, 1160px);
-      height: min(94vh, 800px);
-      border: 1px solid var(--border);
+      width: min(94vw, 1180px);
+      height: min(94vh, 820px);
+      border: 1px solid var(--panel-border);
       border-radius: 28px;
-      background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      background: linear-gradient(135deg, #131313, var(--panel));
       box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
       display: grid;
       place-items: center;
       position: relative;
@@ -53,8 +52,8 @@
       content: "";
       position: absolute;
       inset: 0;
-      background-image: radial-gradient(circle at 20% 20%, rgba(126, 177, 255, 0.16), transparent 24%),
-                        radial-gradient(circle at 85% 80%, rgba(79, 124, 255, 0.14), transparent 28%);
+      background-image: radial-gradient(circle at 20% 20%, rgba(255, 51, 85, 0.14), transparent 24%),
+                        radial-gradient(circle at 80% 80%, rgba(255, 51, 85, 0.08), transparent 28%);
       pointer-events: none;
     }
 
@@ -63,32 +62,34 @@
       z-index: 1;
       text-align: center;
       user-select: none;
-      transition: transform 0.25s ease, opacity 0.25s ease;
+      width: min(94%, 920px);
     }
 
     .display-grid {
       display: flex;
       justify-content: center;
-      gap: 0.75rem;
+      gap: 0.8rem;
       flex-wrap: wrap;
+      margin-bottom: 1.2rem;
     }
 
     .time-block {
-      min-width: 135px;
-      padding: 1rem 1.1rem;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      min-width: 145px;
+      padding: 1rem 1.05rem;
+      border: 1px solid rgba(255, 255, 255, 0.07);
       border-radius: 18px;
-      background: rgba(255, 255, 255, 0.04);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+      background: rgba(255, 255, 255, 0.025);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
     }
 
     .time-value {
-      font-size: clamp(1.8rem, 6vw, 3.2rem);
+      color: var(--accent);
+      font-size: clamp(2rem, 7vw, 3.4rem);
       line-height: 1;
       font-weight: 700;
       letter-spacing: 0.06em;
       font-variant-numeric: tabular-nums;
-      text-shadow: 0 8px 30px rgba(0, 0, 0, 0.28);
+      text-shadow: 0 0 18px rgba(255, 51, 85, 0.22);
     }
 
     .time-label {
@@ -100,8 +101,7 @@
     }
 
     .status {
-      margin-top: 1.1rem;
-      font-size: 0.9rem;
+      font-size: 0.92rem;
       letter-spacing: 0.3em;
       text-transform: uppercase;
       color: var(--muted);
@@ -110,249 +110,133 @@
 
     body.expired .time-value,
     body.expired .status {
-      color: var(--expired);
+      color: var(--accent);
     }
 
-    .settings-toggle {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      z-index: 5;
-      width: 44px;
-      height: 44px;
-      border: 1px solid var(--border);
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text);
-      cursor: pointer;
-      display: grid;
-      place-items: center;
-      backdrop-filter: blur(10px);
-      transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
-    }
-
-    .settings-toggle:hover {
-      transform: translateY(-1px);
-      background: rgba(255, 255, 255, 0.08);
-    }
-
-    body.running .settings-toggle {
-      opacity: 0;
-      pointer-events: none;
-      transform: scale(0.9);
-    }
-
-    .overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(2, 3, 6, 0.75);
-      backdrop-filter: blur(14px);
-      display: grid;
-      place-items: center;
-      z-index: 6;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease;
-    }
-
-    .overlay.open {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .modal {
-      width: min(92vw, 460px);
-      padding: 1.4rem;
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      background: rgba(10, 12, 18, 0.95);
-      box-shadow: 0 24px 90px rgba(0, 0, 0, 0.45);
-    }
-
-    .modal h2 {
-      margin: 0 0 0.35rem;
-      font-size: 1rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .modal p {
-      margin: 0 0 1rem;
-      color: #cdd4e2;
-      font-size: 0.95rem;
-      line-height: 1.5;
-    }
-
-    .inputs {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 0.7rem;
-      margin-bottom: 1rem;
-    }
-
-    .field {
+    .control-wrap {
+      margin-top: 1.5rem;
       display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-    }
-
-    .field label {
-      font-size: 0.7rem;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .field input {
-      width: 100%;
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 12px;
-      background: rgba(255,255,255,0.04);
-      color: var(--text);
-      padding: 0.8rem 0.7rem;
-      font-size: 1rem;
-      font-family: inherit;
-      outline: none;
-      transition: border-color 0.2s ease, background 0.2s ease;
-    }
-
-    .field input:focus {
-      border-color: var(--accent);
-      background: rgba(255,255,255,0.06);
-    }
-
-    .field input::-webkit-outer-spin-button,
-    .field input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-
-    .field input[type="number"] {
-      -moz-appearance: textfield;
-    }
-
-    .control-row {
-      display: flex;
-      gap: 0.7rem;
-      margin-top: 0.35rem;
+      justify-content: center;
+      gap: 0.8rem;
       flex-wrap: wrap;
     }
 
     .btn {
-      flex: 1;
-      min-width: 110px;
-      border: 1px solid var(--border);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 999px;
-      padding: 0.8rem 1rem;
+      padding: 0.8rem 1.1rem;
       font-size: 0.95rem;
       font-weight: 600;
       color: var(--text);
-      background: rgba(255,255,255,0.04);
+      background: rgba(255, 255, 255, 0.03);
       cursor: pointer;
       transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
     }
 
     .btn:hover:not(:disabled) {
       transform: translateY(-1px);
-      background: rgba(255,255,255,0.08);
-      border-color: rgba(255,255,255,0.24);
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.2);
     }
 
     .btn:disabled {
-      opacity: 0.43;
+      opacity: 0.42;
       cursor: not-allowed;
       transform: none;
     }
 
     .btn.primary {
-      background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+      background: linear-gradient(135deg, #ff4466, var(--accent));
       border-color: transparent;
       color: white;
     }
 
-    .btn.primary:hover:not(:disabled) {
-      filter: brightness(1.08);
+    .picker-row {
+      margin-top: 1.2rem;
+      display: flex;
+      justify-content: center;
+      gap: 0.8rem;
+      flex-wrap: wrap;
     }
 
-    .status-message {
+    .field {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.35rem;
+      min-width: 220px;
+    }
+
+    .field label {
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .field input[type="datetime-local"] {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      padding: 0.8rem 0.9rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .field input[type="datetime-local"]:focus {
+      border-color: var(--accent);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .message {
       min-height: 1.2rem;
-      margin-top: 0.8rem;
+      margin-top: 0.75rem;
       font-size: 0.85rem;
       color: var(--accent);
     }
 
-    .status-message.error {
-      color: var(--expired);
+    .message.error {
+      color: #ff6b7a;
     }
 
-    @media (max-width: 700px) {
+    @media (max-width: 760px) {
       body { padding: 1rem; }
       .display-grid { gap: 0.5rem; }
-      .time-block { min-width: 110px; padding: 0.8rem 0.75rem; }
-      .inputs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .control-row { flex-direction: column; }
+      .time-block { min-width: 110px; padding: 0.8rem 0.7rem; }
+      .field { min-width: 100%; }
+      .control-wrap { flex-direction: column; }
     }
   </style>
 </head>
 <body>
   <div class="frame">
-    <button id="settingsToggle" class="settings-toggle" aria-label="Open timer settings" title="Timer settings">⚙</button>
-
     <div class="content">
-      <div class="display-grid" id="displayGrid">
-        <div class="time-block">
-          <div id="daysValue" class="time-value">20</div>
-          <div class="time-label">Days</div>
-        </div>
-        <div class="time-block">
-          <div id="hoursValue" class="time-value">00</div>
-          <div class="time-label">Hours</div>
-        </div>
-        <div class="time-block">
-          <div id="minutesValue" class="time-value">00</div>
-          <div class="time-label">Minutes</div>
-        </div>
-        <div class="time-block">
-          <div id="secondsValue" class="time-value">00</div>
-          <div class="time-label">Seconds</div>
-        </div>
+      <div class="display-grid">
+        <div class="time-block"><div id="daysValue" class="time-value">00</div><div class="time-label">Days</div></div>
+        <div class="time-block"><div id="hoursValue" class="time-value">00</div><div class="time-label">Hours</div></div>
+        <div class="time-block"><div id="minutesValue" class="time-value">00</div><div class="time-label">Minutes</div></div>
+        <div class="time-block"><div id="secondsValue" class="time-value">00</div><div class="time-label">Seconds</div></div>
       </div>
+
       <div id="status" class="status">READY TO START</div>
-    </div>
 
-    <div id="overlay" class="overlay" aria-hidden="true">
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-        <h2 id="modalTitle">Timer Setup</h2>
-        <p>Enter a custom duration and manage the countdown from a clean wallpaper-friendly control panel.</p>
-
-        <div class="inputs">
-          <div class="field">
-            <label for="days">Days</label>
-            <input id="days" type="number" min="0" max="365" step="1" value="20" inputmode="numeric" />
-          </div>
-          <div class="field">
-            <label for="hours">Hours</label>
-            <input id="hoursInput" type="number" min="0" max="23" step="1" value="0" inputmode="numeric" />
-          </div>
-          <div class="field">
-            <label for="minutes">Minutes</label>
-            <input id="minutesInput" type="number" min="0" max="59" step="1" value="0" inputmode="numeric" />
-          </div>
-          <div class="field">
-            <label for="seconds">Seconds</label>
-            <input id="secondsInput" type="number" min="0" max="59" step="1" value="0" inputmode="numeric" />
-          </div>
+      <div class="picker-row">
+        <div class="field">
+          <label for="targetDate">Exam / Target Date</label>
+          <input id="targetDate" type="datetime-local" />
         </div>
-
-        <div class="control-row">
-          <button id="setBtn" class="btn primary" type="button">Set Timer</button>
-          <button id="playBtn" class="btn" type="button">Play</button>
-          <button id="pauseBtn" class="btn" type="button">Pause</button>
-          <button id="resetBtn" class="btn" type="button">Reset</button>
-        </div>
-        <div id="message" class="status-message" aria-live="polite"></div>
       </div>
+
+      <div class="control-wrap">
+        <button id="startBtn" class="btn primary" type="button">Start Countdown</button>
+        <button id="pauseBtn" class="btn" type="button">Pause</button>
+        <button id="resetBtn" class="btn" type="button">Reset</button>
+      </div>
+
+      <div id="message" class="message" aria-live="polite"></div>
     </div>
   </div>
 
@@ -361,61 +245,41 @@
   </audio>
 
   <script>
-    // ------------------------------------------------------------------
-    // Configuration
-    // ------------------------------------------------------------------
-    const CONFIG = {
-      defaultDays: 20,
-      defaultHours: 0,
-      defaultMinutes: 0,
-      defaultSeconds: 0,
-      durationStorageKey: "wallpaper-absolute-timer-duration-ms",
-      endTimeStorageKey: "wallpaper-absolute-timer-end-time"
+    const STORAGE_KEYS = {
+      targetTime: "aspirant-exam-target-time",
+      runningState: "aspirant-exam-running-state"
     };
 
-    // DOM references
     const daysValueEl = document.getElementById("daysValue");
     const hoursValueEl = document.getElementById("hoursValue");
     const minutesValueEl = document.getElementById("minutesValue");
     const secondsValueEl = document.getElementById("secondsValue");
     const statusEl = document.getElementById("status");
-    const overlayEl = document.getElementById("overlay");
-    const settingsToggleEl = document.getElementById("settingsToggle");
-    const daysInputEl = document.getElementById("days");
-    const hoursInputEl = document.getElementById("hoursInput");
-    const minutesInputEl = document.getElementById("minutesInput");
-    const secondsInputEl = document.getElementById("secondsInput");
-    const setBtnEl = document.getElementById("setBtn");
-    const playBtnEl = document.getElementById("playBtn");
+    const targetDateEl = document.getElementById("targetDate");
+    const startBtnEl = document.getElementById("startBtn");
     const pauseBtnEl = document.getElementById("pauseBtn");
     const resetBtnEl = document.getElementById("resetBtn");
     const messageEl = document.getElementById("message");
     const alarmEl = document.getElementById("alarm");
 
     let timerIntervalId = null;
-    let currentEndTime = null;
-    let configuredDurationMs = 0;
-    let pausedRemainingMs = 0;
+    let targetTime = null;
     let isRunning = false;
+    let pausedRemainingMs = 0;
 
-    // ------------------------------------------------------------------
-    // Storage helpers
-    // ------------------------------------------------------------------
-    function getStoredNumber(key) {
+    function getStoredValue(key) {
       try {
-        const raw = localStorage.getItem(key);
-        return raw ? Number(raw) : null;
+        return localStorage.getItem(key);
       } catch (error) {
-        console.warn("Unable to read storage value", error);
         return null;
       }
     }
 
-    function setStoredNumber(key, value) {
+    function setStoredValue(key, value) {
       try {
-        localStorage.setItem(key, String(value));
+        localStorage.setItem(key, value);
       } catch (error) {
-        console.warn("Unable to write storage value", error);
+        console.warn("Storage unavailable", error);
       }
     }
 
@@ -423,27 +287,17 @@
       try {
         localStorage.removeItem(key);
       } catch (error) {
-        console.warn("Unable to clear storage value", error);
+        console.warn("Storage unavailable", error);
       }
     }
 
-    // ------------------------------------------------------------------
-    // Formatting and state helpers
-    // ------------------------------------------------------------------
-    function clamp(value, min, max) {
-      return Math.min(max, Math.max(min, value));
-    }
-
-    function formatPadded(value) {
+    function pad(value) {
       return String(value).padStart(2, "0");
     }
 
-    function getDurationMsFromInputs() {
-      const days = clamp(parseInt(daysInputEl.value, 10) || 0, 0, 365);
-      const hours = clamp(parseInt(hoursInputEl.value, 10) || 0, 0, 23);
-      const minutes = clamp(parseInt(minutesInputEl.value, 10) || 0, 0, 59);
-      const seconds = clamp(parseInt(secondsInputEl.value, 10) || 0, 0, 59);
-      return (((days * 24 + hours) * 60 + minutes) * 60 + seconds) * 1000;
+    function stopAlarm() {
+      alarmEl.pause();
+      alarmEl.currentTime = 0;
     }
 
     function setMessage(text, isError = false) {
@@ -452,7 +306,7 @@
     }
 
     function updateButtonState() {
-      playBtnEl.disabled = isRunning;
+      startBtnEl.disabled = isRunning;
       pauseBtnEl.disabled = !isRunning;
     }
 
@@ -464,35 +318,33 @@
       const minutes = Math.floor((totalSeconds % 3600) / 60);
       const seconds = totalSeconds % 60;
 
-      daysValueEl.textContent = formatPadded(days);
-      hoursValueEl.textContent = formatPadded(hours);
-      minutesValueEl.textContent = formatPadded(minutes);
-      secondsValueEl.textContent = formatPadded(seconds);
+      daysValueEl.textContent = pad(days);
+      hoursValueEl.textContent = pad(hours);
+      minutesValueEl.textContent = pad(minutes);
+      secondsValueEl.textContent = pad(seconds);
     }
 
     function renderReady() {
-      renderDisplay(configuredDurationMs || (((CONFIG.defaultDays * 24 + CONFIG.defaultHours) * 60 + CONFIG.defaultMinutes) * 60 + CONFIG.defaultSeconds) * 1000);
+      renderDisplay(0);
       statusEl.textContent = "READY TO START";
       document.body.classList.remove("expired", "running");
       isRunning = false;
-      currentEndTime = null;
       updateButtonState();
     }
 
     function renderExpired() {
       renderDisplay(0);
-      statusEl.textContent = "TIMER EXPIRED";
+      statusEl.textContent = "TIME EXPIRED";
       document.body.classList.add("expired");
       document.body.classList.remove("running");
       isRunning = false;
-      currentEndTime = null;
       updateButtonState();
       if (alarmEl.paused) {
         alarmEl.play().catch(() => {});
       }
     }
 
-    function renderFromEndTime(endTime) {
+    function renderFromTarget(endTime) {
       const remainingMs = endTime - Date.now();
       if (remainingMs <= 0) {
         renderExpired();
@@ -500,84 +352,60 @@
       }
 
       renderDisplay(remainingMs);
-      statusEl.textContent = "TIME REMAINING";
+      statusEl.textContent = "COUNTING DOWN";
       document.body.classList.remove("expired");
       document.body.classList.add("running");
       return true;
     }
 
-    function stopTimerLoop() {
+    function stopLoop() {
       if (timerIntervalId) {
         clearInterval(timerIntervalId);
         timerIntervalId = null;
       }
     }
 
-    function stopAlarm() {
-      alarmEl.pause();
-      alarmEl.currentTime = 0;
-    }
-
-    function openModal() {
-      overlayEl.classList.add("open");
-      overlayEl.setAttribute("aria-hidden", "false");
-      setMessage("");
-    }
-
-    function closeModal() {
-      overlayEl.classList.remove("open");
-      overlayEl.setAttribute("aria-hidden", "true");
-    }
-
-    function setConfiguredDuration(durationMs) {
-      configuredDurationMs = durationMs;
-      setStoredNumber(CONFIG.durationStorageKey, durationMs);
-      renderDisplay(durationMs);
-      pausedRemainingMs = durationMs;
-      currentEndTime = null;
-      stopTimerLoop();
-      stopAlarm();
-      isRunning = false;
-      statusEl.textContent = "TIMER SET";
-      updateButtonState();
-    }
-
-    function startCountdownFromCurrentDuration() {
-      if (!configuredDurationMs || configuredDurationMs <= 0) {
-        setMessage("Set a timer first.", true);
-        return;
-      }
-
-      const baseRemainingMs = pausedRemainingMs > 0 ? pausedRemainingMs : configuredDurationMs;
-      const endTime = Date.now() + baseRemainingMs;
-      currentEndTime = endTime;
-      setStoredNumber(CONFIG.endTimeStorageKey, endTime);
-      pausedRemainingMs = baseRemainingMs;
-      isRunning = true;
-      stopTimerLoop();
-      stopAlarm();
-      closeModal();
-      setMessage("");
-      if (!renderFromEndTime(endTime)) {
-        return;
-      }
-      updateButtonState();
+    function startLoop(endTime) {
+      stopLoop();
       timerIntervalId = window.setInterval(() => {
-        if (!renderFromEndTime(endTime)) {
-          stopTimerLoop();
+        if (!renderFromTarget(endTime)) {
+          stopLoop();
           isRunning = false;
           updateButtonState();
         }
       }, 1000);
     }
 
-    function pauseCountdown() {
-      if (!isRunning || !currentEndTime) {
+    function startCountdown() {
+      const rawValue = targetDateEl.value;
+      if (!rawValue) {
+        setMessage("Please choose a target date and time.", true);
         return;
       }
 
-      stopTimerLoop();
-      pausedRemainingMs = Math.max(0, currentEndTime - Date.now());
+      const chosenTime = new Date(rawValue).getTime();
+      const now = Date.now();
+      if (Number.isNaN(chosenTime) || chosenTime <= now) {
+        setMessage("Please select a future date and time.", true);
+        return;
+      }
+
+      targetTime = chosenTime;
+      pausedRemainingMs = chosenTime - now;
+      isRunning = true;
+      setStoredValue(STORAGE_KEYS.targetTime, String(chosenTime));
+      setStoredValue(STORAGE_KEYS.runningState, "1");
+      stopAlarm();
+      closeMessage();
+      renderFromTarget(chosenTime);
+      updateButtonState();
+      startLoop(chosenTime);
+    }
+
+    function pauseCountdown() {
+      if (!isRunning || !targetTime) return;
+      stopLoop();
+      pausedRemainingMs = Math.max(0, targetTime - Date.now());
       isRunning = false;
       statusEl.textContent = "PAUSED";
       renderDisplay(pausedRemainingMs);
@@ -586,96 +414,59 @@
     }
 
     function resetCountdown() {
-      stopTimerLoop();
+      stopLoop();
       stopAlarm();
-      removeStoredValue(CONFIG.endTimeStorageKey);
-      currentEndTime = null;
+      removeStoredValue(STORAGE_KEYS.targetTime);
+      removeStoredValue(STORAGE_KEYS.runningState);
+      targetTime = null;
+      pausedRemainingMs = 0;
       isRunning = false;
-      pausedRemainingMs = configuredDurationMs;
-      renderDisplay(configuredDurationMs || (((CONFIG.defaultDays * 24 + CONFIG.defaultHours) * 60 + CONFIG.defaultMinutes) * 60 + CONFIG.defaultSeconds) * 1000);
-      statusEl.textContent = "RESET";
+      targetDateEl.value = "";
+      renderReady();
       updateButtonState();
-      openModal();
-      setMessage("Timer reset to the last configured duration.");
+      setMessage("Countdown reset.");
+    }
+
+    function closeMessage() {
+      setMessage("");
     }
 
     function initializeFromStorage() {
-      const storedDurationMs = getStoredNumber(CONFIG.durationStorageKey);
-      const storedEndTime = getStoredNumber(CONFIG.endTimeStorageKey);
-
-      if (storedDurationMs && storedDurationMs > 0) {
-        configuredDurationMs = storedDurationMs;
-        pausedRemainingMs = storedDurationMs;
-      } else {
-        configuredDurationMs = (((CONFIG.defaultDays * 24 + CONFIG.defaultHours) * 60 + CONFIG.defaultMinutes) * 60 + CONFIG.defaultSeconds) * 1000;
-        pausedRemainingMs = configuredDurationMs;
-      }
-
-      if (storedEndTime && storedEndTime > Date.now()) {
-        currentEndTime = storedEndTime;
-        isRunning = true;
-        renderFromEndTime(storedEndTime);
-        updateButtonState();
-        timerIntervalId = window.setInterval(() => {
-          if (!renderFromEndTime(storedEndTime)) {
-            stopTimerLoop();
-            isRunning = false;
-            updateButtonState();
-          }
-        }, 1000);
-        return;
+      const storedTarget = getStoredValue(STORAGE_KEYS.targetTime);
+      const isStoredRunning = getStoredValue(STORAGE_KEYS.runningState) === "1";
+      if (storedTarget && isStoredRunning) {
+        const parsedTarget = Number(storedTarget);
+        if (!Number.isNaN(parsedTarget) && parsedTarget > Date.now()) {
+          targetTime = parsedTarget;
+          isRunning = true;
+          renderFromTarget(parsedTarget);
+          updateButtonState();
+          startLoop(parsedTarget);
+          return;
+        }
       }
 
       renderReady();
-    }
-
-    function populateInputsFromDuration(durationMs) {
-      const totalSeconds = Math.floor(durationMs / 1000);
-      const days = Math.floor(totalSeconds / 86400);
-      const hours = Math.floor((totalSeconds % 86400) / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const seconds = totalSeconds % 60;
-
-      daysInputEl.value = String(days);
-      hoursInputEl.value = String(hours);
-      minutesInputEl.value = String(minutes);
-      secondsInputEl.value = String(seconds);
-    }
-
-    // Event listeners
-    settingsToggleEl.addEventListener("click", openModal);
-    setBtnEl.addEventListener("click", () => {
-      const durationMs = getDurationMsFromInputs();
-      if (durationMs <= 0) {
-        setMessage("Enter a duration greater than zero.", true);
-        return;
+      if (storedTarget) {
+        const parsedTarget = Number(storedTarget);
+        if (!Number.isNaN(parsedTarget)) {
+          const localValue = new Date(parsedTarget).toISOString().slice(0, 16);
+          targetDateEl.value = localValue;
+        }
       }
-      setConfiguredDuration(durationMs);
-      populateInputsFromDuration(durationMs);
-      setMessage("Timer configured. Press Play to begin.");
-    });
+    }
 
-    playBtnEl.addEventListener("click", startCountdownFromCurrentDuration);
+    startBtnEl.addEventListener("click", startCountdown);
     pauseBtnEl.addEventListener("click", pauseCountdown);
     resetBtnEl.addEventListener("click", resetCountdown);
 
-    overlayEl.addEventListener("click", (event) => {
-      if (event.target === overlayEl) {
-        closeModal();
-      }
-    });
-
     window.addEventListener("focus", () => {
-      if (currentEndTime) {
-        renderFromEndTime(currentEndTime);
+      if (targetTime) {
+        renderFromTarget(targetTime);
       }
     });
 
-    document.addEventListener("DOMContentLoaded", () => {
-      populateInputsFromDuration((((CONFIG.defaultDays * 24 + CONFIG.defaultHours) * 60 + CONFIG.defaultMinutes) * 60 + CONFIG.defaultSeconds) * 1000);
-      initializeFromStorage();
-      updateButtonState();
-    });
+    document.addEventListener("DOMContentLoaded", initializeFromStorage);
   </script>
 </body>
 </html>
