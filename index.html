@@ -7,7 +7,6 @@
   <style>
     :root {
       --bg: #06070b;
-      --panel: rgba(255, 255, 255, 0.045);
       --text: #f5f7fb;
       --muted: #8a90a4;
       --accent: #7eb1ff;
@@ -17,9 +16,7 @@
       --shadow: 0 18px 70px rgba(0, 0, 0, 0.45);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     html, body {
       width: 100%;
@@ -39,8 +36,8 @@
     }
 
     .frame {
-      width: min(93vw, 1150px);
-      height: min(93vh, 780px);
+      width: min(94vw, 1160px);
+      height: min(94vh, 800px);
       border: 1px solid var(--border);
       border-radius: 28px;
       background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
@@ -69,30 +66,49 @@
       transition: transform 0.25s ease, opacity 0.25s ease;
     }
 
-    .timer {
-      font-size: clamp(4rem, 18vw, 11.5rem);
-      line-height: 0.95;
+    .display-grid {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .time-block {
+      min-width: 135px;
+      padding: 1rem 1.1rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .time-value {
+      font-size: clamp(1.8rem, 6vw, 3.2rem);
+      line-height: 1;
       font-weight: 700;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
       font-variant-numeric: tabular-nums;
-      text-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-      transition: color 0.25s ease, transform 0.25s ease;
+      text-shadow: 0 8px 30px rgba(0, 0, 0, 0.28);
+    }
+
+    .time-label {
+      margin-top: 0.45rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--muted);
     }
 
     .status {
-      margin-top: 1rem;
-      font-size: 0.95rem;
-      letter-spacing: 0.32em;
+      margin-top: 1.1rem;
+      font-size: 0.9rem;
+      letter-spacing: 0.3em;
       text-transform: uppercase;
       color: var(--muted);
       transition: color 0.25s ease;
     }
 
-    body.expired .timer {
-      color: var(--expired);
-      transform: scale(1.01);
-    }
-
+    body.expired .time-value,
     body.expired .status {
       color: var(--expired);
     }
@@ -102,8 +118,8 @@
       top: 1rem;
       right: 1rem;
       z-index: 5;
-      width: 42px;
-      height: 42px;
+      width: 44px;
+      height: 44px;
       border: 1px solid var(--border);
       border-radius: 50%;
       background: rgba(255, 255, 255, 0.05);
@@ -129,7 +145,7 @@
     .overlay {
       position: absolute;
       inset: 0;
-      background: rgba(2, 3, 6, 0.72);
+      background: rgba(2, 3, 6, 0.75);
       backdrop-filter: blur(14px);
       display: grid;
       place-items: center;
@@ -145,12 +161,12 @@
     }
 
     .modal {
-      width: min(92vw, 420px);
-      padding: 1.5rem;
+      width: min(92vw, 460px);
+      padding: 1.4rem;
       border: 1px solid var(--border);
-      border-radius: 20px;
-      background: rgba(10, 12, 18, 0.96);
-      box-shadow: 0 25px 90px rgba(0, 0, 0, 0.45);
+      border-radius: 22px;
+      background: rgba(10, 12, 18, 0.95);
+      box-shadow: 0 24px 90px rgba(0, 0, 0, 0.45);
     }
 
     .modal h2 {
@@ -170,7 +186,7 @@
 
     .inputs {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 0.7rem;
       margin-bottom: 1rem;
     }
@@ -182,7 +198,7 @@
     }
 
     .field label {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       letter-spacing: 0.16em;
       text-transform: uppercase;
       color: var(--muted);
@@ -216,14 +232,16 @@
       -moz-appearance: textfield;
     }
 
-    .actions {
+    .control-row {
       display: flex;
       gap: 0.7rem;
       margin-top: 0.35rem;
+      flex-wrap: wrap;
     }
 
     .btn {
       flex: 1;
+      min-width: 110px;
       border: 1px solid var(--border);
       border-radius: 999px;
       padding: 0.8rem 1rem;
@@ -232,13 +250,19 @@
       color: var(--text);
       background: rgba(255,255,255,0.04);
       cursor: pointer;
-      transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+      transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
     }
 
-    .btn:hover {
+    .btn:hover:not(:disabled) {
       transform: translateY(-1px);
       background: rgba(255,255,255,0.08);
       border-color: rgba(255,255,255,0.24);
+    }
+
+    .btn:disabled {
+      opacity: 0.43;
+      cursor: not-allowed;
+      transform: none;
     }
 
     .btn.primary {
@@ -247,13 +271,13 @@
       color: white;
     }
 
-    .btn.primary:hover {
+    .btn.primary:hover:not(:disabled) {
       filter: brightness(1.08);
     }
 
     .status-message {
       min-height: 1.2rem;
-      margin-top: 0.75rem;
+      margin-top: 0.8rem;
       font-size: 0.85rem;
       color: var(--accent);
     }
@@ -262,22 +286,12 @@
       color: var(--expired);
     }
 
-    @media (max-width: 640px) {
-      body {
-        padding: 1rem;
-      }
-
-      .modal {
-        padding: 1.2rem;
-      }
-
-      .inputs {
-        grid-template-columns: 1fr;
-      }
-
-      .actions {
-        flex-direction: column;
-      }
+    @media (max-width: 700px) {
+      body { padding: 1rem; }
+      .display-grid { gap: 0.5rem; }
+      .time-block { min-width: 110px; padding: 0.8rem 0.75rem; }
+      .inputs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .control-row { flex-direction: column; }
     }
   </style>
 </head>
@@ -286,115 +300,222 @@
     <button id="settingsToggle" class="settings-toggle" aria-label="Open timer settings" title="Timer settings">⚙</button>
 
     <div class="content">
-      <div id="timer" class="timer">00:10:00</div>
-      <div id="status" class="status">TIME REMAINING</div>
+      <div class="display-grid" id="displayGrid">
+        <div class="time-block">
+          <div id="daysValue" class="time-value">20</div>
+          <div class="time-label">Days</div>
+        </div>
+        <div class="time-block">
+          <div id="hoursValue" class="time-value">00</div>
+          <div class="time-label">Hours</div>
+        </div>
+        <div class="time-block">
+          <div id="minutesValue" class="time-value">00</div>
+          <div class="time-label">Minutes</div>
+        </div>
+        <div class="time-block">
+          <div id="secondsValue" class="time-value">00</div>
+          <div class="time-label">Seconds</div>
+        </div>
+      </div>
+      <div id="status" class="status">READY TO START</div>
     </div>
 
     <div id="overlay" class="overlay" aria-hidden="true">
       <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
         <h2 id="modalTitle">Timer Setup</h2>
-        <p>Choose a custom countdown and start the absolute real-time clock.</p>
+        <p>Enter a custom duration and manage the countdown from a clean wallpaper-friendly control panel.</p>
 
         <div class="inputs">
           <div class="field">
+            <label for="days">Days</label>
+            <input id="days" type="number" min="0" max="365" step="1" value="20" inputmode="numeric" />
+          </div>
+          <div class="field">
             <label for="hours">Hours</label>
-            <input id="hours" type="number" min="0" max="99" step="1" value="0" inputmode="numeric" />
+            <input id="hoursInput" type="number" min="0" max="23" step="1" value="0" inputmode="numeric" />
           </div>
           <div class="field">
             <label for="minutes">Minutes</label>
-            <input id="minutes" type="number" min="0" max="59" step="1" value="10" inputmode="numeric" />
+            <input id="minutesInput" type="number" min="0" max="59" step="1" value="0" inputmode="numeric" />
           </div>
           <div class="field">
             <label for="seconds">Seconds</label>
-            <input id="seconds" type="number" min="0" max="59" step="1" value="0" inputmode="numeric" />
+            <input id="secondsInput" type="number" min="0" max="59" step="1" value="0" inputmode="numeric" />
           </div>
         </div>
 
-        <div class="actions">
-          <button id="startBtn" class="btn primary" type="button">Start</button>
-          <button id="resetBtn" class="btn" type="button">Reset / Stop</button>
+        <div class="control-row">
+          <button id="setBtn" class="btn primary" type="button">Set Timer</button>
+          <button id="playBtn" class="btn" type="button">Play</button>
+          <button id="pauseBtn" class="btn" type="button">Pause</button>
+          <button id="resetBtn" class="btn" type="button">Reset</button>
         </div>
         <div id="message" class="status-message" aria-live="polite"></div>
       </div>
     </div>
   </div>
 
+  <audio id="alarm" loop preload="auto">
+    <source src="https://www.soundjay.com/buttons/button-16.mp3" type="audio/mpeg" />
+  </audio>
+
   <script>
     // ------------------------------------------------------------------
     // Configuration
     // ------------------------------------------------------------------
-    // Update this default value if you want a different initial duration.
     const CONFIG = {
+      defaultDays: 20,
       defaultHours: 0,
-      defaultMinutes: 10,
+      defaultMinutes: 0,
       defaultSeconds: 0,
-      storageKey: "wallpaper-absolute-timer-end-time"
+      durationStorageKey: "wallpaper-absolute-timer-duration-ms",
+      endTimeStorageKey: "wallpaper-absolute-timer-end-time"
     };
 
-    const timerEl = document.getElementById("timer");
+    // DOM references
+    const daysValueEl = document.getElementById("daysValue");
+    const hoursValueEl = document.getElementById("hoursValue");
+    const minutesValueEl = document.getElementById("minutesValue");
+    const secondsValueEl = document.getElementById("secondsValue");
     const statusEl = document.getElementById("status");
     const overlayEl = document.getElementById("overlay");
     const settingsToggleEl = document.getElementById("settingsToggle");
-    const hoursEl = document.getElementById("hours");
-    const minutesEl = document.getElementById("minutes");
-    const secondsEl = document.getElementById("seconds");
-    const startBtnEl = document.getElementById("startBtn");
+    const daysInputEl = document.getElementById("days");
+    const hoursInputEl = document.getElementById("hoursInput");
+    const minutesInputEl = document.getElementById("minutesInput");
+    const secondsInputEl = document.getElementById("secondsInput");
+    const setBtnEl = document.getElementById("setBtn");
+    const playBtnEl = document.getElementById("playBtn");
+    const pauseBtnEl = document.getElementById("pauseBtn");
     const resetBtnEl = document.getElementById("resetBtn");
     const messageEl = document.getElementById("message");
+    const alarmEl = document.getElementById("alarm");
 
     let timerIntervalId = null;
+    let currentEndTime = null;
+    let configuredDurationMs = 0;
+    let pausedRemainingMs = 0;
+    let isRunning = false;
 
     // ------------------------------------------------------------------
-    // Utility helpers
+    // Storage helpers
+    // ------------------------------------------------------------------
+    function getStoredNumber(key) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? Number(raw) : null;
+      } catch (error) {
+        console.warn("Unable to read storage value", error);
+        return null;
+      }
+    }
+
+    function setStoredNumber(key, value) {
+      try {
+        localStorage.setItem(key, String(value));
+      } catch (error) {
+        console.warn("Unable to write storage value", error);
+      }
+    }
+
+    function removeStoredValue(key) {
+      try {
+        localStorage.removeItem(key);
+      } catch (error) {
+        console.warn("Unable to clear storage value", error);
+      }
+    }
+
+    // ------------------------------------------------------------------
+    // Formatting and state helpers
     // ------------------------------------------------------------------
     function clamp(value, min, max) {
       return Math.min(max, Math.max(min, value));
     }
 
-    function formatDuration(totalSeconds) {
-      const safeSeconds = Math.max(0, totalSeconds);
-      const hours = Math.floor(safeSeconds / 3600);
-      const minutes = Math.floor((safeSeconds % 3600) / 60);
-      const seconds = safeSeconds % 60;
-      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    function formatPadded(value) {
+      return String(value).padStart(2, "0");
     }
 
-    function getStoredEndTime() {
-      try {
-        const raw = localStorage.getItem(CONFIG.storageKey);
-        return raw ? Number(raw) : null;
-      } catch (error) {
-        console.warn("Unable to read timer end time from localStorage.", error);
-        return null;
-      }
-    }
-
-    function setStoredEndTime(endTime) {
-      try {
-        localStorage.setItem(CONFIG.storageKey, String(endTime));
-      } catch (error) {
-        console.warn("Unable to write timer end time to localStorage.", error);
-      }
-    }
-
-    function clearStoredEndTime() {
-      try {
-        localStorage.removeItem(CONFIG.storageKey);
-      } catch (error) {
-        console.warn("Unable to clear timer end time from localStorage.", error);
-      }
-    }
-
-    function getInputDurationMs() {
-      const hours = clamp(parseInt(hoursEl.value, 10) || 0, 0, 99);
-      const minutes = clamp(parseInt(minutesEl.value, 10) || 0, 0, 59);
-      const seconds = clamp(parseInt(secondsEl.value, 10) || 0, 0, 59);
-      return (((hours * 60) + minutes) * 60 + seconds) * 1000;
+    function getDurationMsFromInputs() {
+      const days = clamp(parseInt(daysInputEl.value, 10) || 0, 0, 365);
+      const hours = clamp(parseInt(hoursInputEl.value, 10) || 0, 0, 23);
+      const minutes = clamp(parseInt(minutesInputEl.value, 10) || 0, 0, 59);
+      const seconds = clamp(parseInt(secondsInputEl.value, 10) || 0, 0, 59);
+      return (((days * 24 + hours) * 60 + minutes) * 60 + seconds) * 1000;
     }
 
     function setMessage(text, isError = false) {
       messageEl.textContent = text;
       messageEl.classList.toggle("error", isError);
+    }
+
+    function updateButtonState() {
+      playBtnEl.disabled = isRunning;
+      pauseBtnEl.disabled = !isRunning;
+    }
+
+    function renderDisplay(totalMs) {
+      const safeMs = Math.max(0, totalMs);
+      const totalSeconds = Math.floor(safeMs / 1000);
+      const days = Math.floor(totalSeconds / 86400);
+      const hours = Math.floor((totalSeconds % 86400) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      daysValueEl.textContent = formatPadded(days);
+      hoursValueEl.textContent = formatPadded(hours);
+      minutesValueEl.textContent = formatPadded(minutes);
+      secondsValueEl.textContent = formatPadded(seconds);
+    }
+
+    function renderReady() {
+      renderDisplay(configuredDurationMs || (((CONFIG.defaultDays * 24 + CONFIG.defaultHours) * 60 + CONFIG.defaultMinutes) * 60 + CONFIG.defaultSeconds) * 1000);
+      statusEl.textContent = "READY TO START";
+      document.body.classList.remove("expired", "running");
+      isRunning = false;
+      currentEndTime = null;
+      updateButtonState();
+    }
+
+    function renderExpired() {
+      renderDisplay(0);
+      statusEl.textContent = "TIMER EXPIRED";
+      document.body.classList.add("expired");
+      document.body.classList.remove("running");
+      isRunning = false;
+      currentEndTime = null;
+      updateButtonState();
+      if (alarmEl.paused) {
+        alarmEl.play().catch(() => {});
+      }
+    }
+
+    function renderFromEndTime(endTime) {
+      const remainingMs = endTime - Date.now();
+      if (remainingMs <= 0) {
+        renderExpired();
+        return false;
+      }
+
+      renderDisplay(remainingMs);
+      statusEl.textContent = "TIME REMAINING";
+      document.body.classList.remove("expired");
+      document.body.classList.add("running");
+      return true;
+    }
+
+    function stopTimerLoop() {
+      if (timerIntervalId) {
+        clearInterval(timerIntervalId);
+        timerIntervalId = null;
+      }
+    }
+
+    function stopAlarm() {
+      alarmEl.pause();
+      alarmEl.currentTime = 0;
     }
 
     function openModal() {
@@ -408,100 +529,135 @@
       overlayEl.setAttribute("aria-hidden", "true");
     }
 
-    function renderNeutral() {
-      timerEl.textContent = formatDuration((CONFIG.defaultHours * 3600) + (CONFIG.defaultMinutes * 60) + CONFIG.defaultSeconds);
-      statusEl.textContent = "READY TO START";
-      document.body.classList.remove("expired", "running");
+    function setConfiguredDuration(durationMs) {
+      configuredDurationMs = durationMs;
+      setStoredNumber(CONFIG.durationStorageKey, durationMs);
+      renderDisplay(durationMs);
+      pausedRemainingMs = durationMs;
+      currentEndTime = null;
+      stopTimerLoop();
+      stopAlarm();
+      isRunning = false;
+      statusEl.textContent = "TIMER SET";
+      updateButtonState();
     }
 
-    function renderExpired() {
-      timerEl.textContent = "00:00:00";
-      statusEl.textContent = "TIMER EXPIRED";
-      document.body.classList.add("expired");
-      document.body.classList.remove("running");
-    }
-
-    function renderRemaining(endTime) {
-      const remainingMs = endTime - Date.now();
-      const remainingSeconds = Math.ceil(remainingMs / 1000);
-
-      if (remainingSeconds <= 0) {
-        renderExpired();
-        return false;
-      }
-
-      timerEl.textContent = formatDuration(remainingSeconds);
-      statusEl.textContent = "TIME REMAINING";
-      document.body.classList.remove("expired");
-      document.body.classList.add("running");
-      return true;
-    }
-
-    function startTimerFromInputs() {
-      const durationMs = getInputDurationMs();
-
-      if (durationMs <= 0) {
-        setMessage("Enter a time greater than zero.", true);
+    function startCountdownFromCurrentDuration() {
+      if (!configuredDurationMs || configuredDurationMs <= 0) {
+        setMessage("Set a timer first.", true);
         return;
       }
 
-      const endTime = Date.now() + durationMs;
-      setStoredEndTime(endTime);
+      const baseRemainingMs = pausedRemainingMs > 0 ? pausedRemainingMs : configuredDurationMs;
+      const endTime = Date.now() + baseRemainingMs;
+      currentEndTime = endTime;
+      setStoredNumber(CONFIG.endTimeStorageKey, endTime);
+      pausedRemainingMs = baseRemainingMs;
+      isRunning = true;
+      stopTimerLoop();
+      stopAlarm();
       closeModal();
       setMessage("");
-      renderRemaining(endTime);
-      syncInterval(endTime);
-    }
-
-    function syncInterval(endTime) {
-      if (timerIntervalId) {
-        clearInterval(timerIntervalId);
+      if (!renderFromEndTime(endTime)) {
+        return;
       }
-
+      updateButtonState();
       timerIntervalId = window.setInterval(() => {
-        if (!renderRemaining(endTime)) {
-          clearInterval(timerIntervalId);
-          timerIntervalId = null;
+        if (!renderFromEndTime(endTime)) {
+          stopTimerLoop();
+          isRunning = false;
+          updateButtonState();
         }
       }, 1000);
     }
 
-    function resetTimer() {
-      clearStoredEndTime();
-      if (timerIntervalId) {
-        clearInterval(timerIntervalId);
-        timerIntervalId = null;
+    function pauseCountdown() {
+      if (!isRunning || !currentEndTime) {
+        return;
       }
-      renderNeutral();
-      closeModal();
-      setMessage("Timer stopped. Configure a new countdown.");
-      hoursEl.value = String(CONFIG.defaultHours).padStart(2, "0");
-      minutesEl.value = String(CONFIG.defaultMinutes).padStart(2, "0");
-      secondsEl.value = String(CONFIG.defaultSeconds).padStart(2, "0");
+
+      stopTimerLoop();
+      pausedRemainingMs = Math.max(0, currentEndTime - Date.now());
+      isRunning = false;
+      statusEl.textContent = "PAUSED";
+      renderDisplay(pausedRemainingMs);
+      updateButtonState();
+      setMessage("Countdown paused.");
+    }
+
+    function resetCountdown() {
+      stopTimerLoop();
+      stopAlarm();
+      removeStoredValue(CONFIG.endTimeStorageKey);
+      currentEndTime = null;
+      isRunning = false;
+      pausedRemainingMs = configuredDurationMs;
+      renderDisplay(configuredDurationMs || (((CONFIG.defaultDays * 24 + CONFIG.defaultHours) * 60 + CONFIG.defaultMinutes) * 60 + CONFIG.defaultSeconds) * 1000);
+      statusEl.textContent = "RESET";
+      updateButtonState();
+      openModal();
+      setMessage("Timer reset to the last configured duration.");
     }
 
     function initializeFromStorage() {
-      const storedEndTime = getStoredEndTime();
+      const storedDurationMs = getStoredNumber(CONFIG.durationStorageKey);
+      const storedEndTime = getStoredNumber(CONFIG.endTimeStorageKey);
 
-      if (storedEndTime && !Number.isNaN(storedEndTime)) {
-        const remainingMs = storedEndTime - Date.now();
-        if (remainingMs > 0) {
-          renderRemaining(storedEndTime);
-          syncInterval(storedEndTime);
-          return true;
-        }
-
-        renderExpired();
-        return true;
+      if (storedDurationMs && storedDurationMs > 0) {
+        configuredDurationMs = storedDurationMs;
+        pausedRemainingMs = storedDurationMs;
+      } else {
+        configuredDurationMs = (((CONFIG.defaultDays * 24 + CONFIG.defaultHours) * 60 + CONFIG.defaultMinutes) * 60 + CONFIG.defaultSeconds) * 1000;
+        pausedRemainingMs = configuredDurationMs;
       }
 
-      renderNeutral();
-      return false;
+      if (storedEndTime && storedEndTime > Date.now()) {
+        currentEndTime = storedEndTime;
+        isRunning = true;
+        renderFromEndTime(storedEndTime);
+        updateButtonState();
+        timerIntervalId = window.setInterval(() => {
+          if (!renderFromEndTime(storedEndTime)) {
+            stopTimerLoop();
+            isRunning = false;
+            updateButtonState();
+          }
+        }, 1000);
+        return;
+      }
+
+      renderReady();
     }
 
+    function populateInputsFromDuration(durationMs) {
+      const totalSeconds = Math.floor(durationMs / 1000);
+      const days = Math.floor(totalSeconds / 86400);
+      const hours = Math.floor((totalSeconds % 86400) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      daysInputEl.value = String(days);
+      hoursInputEl.value = String(hours);
+      minutesInputEl.value = String(minutes);
+      secondsInputEl.value = String(seconds);
+    }
+
+    // Event listeners
     settingsToggleEl.addEventListener("click", openModal);
-    startBtnEl.addEventListener("click", startTimerFromInputs);
-    resetBtnEl.addEventListener("click", resetTimer);
+    setBtnEl.addEventListener("click", () => {
+      const durationMs = getDurationMsFromInputs();
+      if (durationMs <= 0) {
+        setMessage("Enter a duration greater than zero.", true);
+        return;
+      }
+      setConfiguredDuration(durationMs);
+      populateInputsFromDuration(durationMs);
+      setMessage("Timer configured. Press Play to begin.");
+    });
+
+    playBtnEl.addEventListener("click", startCountdownFromCurrentDuration);
+    pauseBtnEl.addEventListener("click", pauseCountdown);
+    resetBtnEl.addEventListener("click", resetCountdown);
 
     overlayEl.addEventListener("click", (event) => {
       if (event.target === overlayEl) {
@@ -510,17 +666,15 @@
     });
 
     window.addEventListener("focus", () => {
-      const storedEndTime = getStoredEndTime();
-      if (storedEndTime && !Number.isNaN(storedEndTime)) {
-        renderRemaining(storedEndTime);
+      if (currentEndTime) {
+        renderFromEndTime(currentEndTime);
       }
     });
 
     document.addEventListener("DOMContentLoaded", () => {
-      hoursEl.value = String(CONFIG.defaultHours).padStart(2, "0");
-      minutesEl.value = String(CONFIG.defaultMinutes).padStart(2, "0");
-      secondsEl.value = String(CONFIG.defaultSeconds).padStart(2, "0");
+      populateInputsFromDuration((((CONFIG.defaultDays * 24 + CONFIG.defaultHours) * 60 + CONFIG.defaultMinutes) * 60 + CONFIG.defaultSeconds) * 1000);
       initializeFromStorage();
+      updateButtonState();
     });
   </script>
 </body>
