@@ -6,12 +6,15 @@
   <title>Absolute Wallpaper Timer</title>
   <style>
     :root {
-      --bg: #0d0d11;
-      --bg-accent: #16161d;
+      --bg: #06070b;
+      --panel: rgba(255, 255, 255, 0.045);
       --text: #f5f7fb;
-      --muted: #7d8292;
-      --accent: #4f7cff;
-      --expired: #ff5d5d;
+      --muted: #8a90a4;
+      --accent: #7eb1ff;
+      --accent-strong: #4f7cff;
+      --border: rgba(255, 255, 255, 0.12);
+      --expired: #ff5e5e;
+      --shadow: 0 18px 70px rgba(0, 0, 0, 0.45);
     }
 
     * {
@@ -23,7 +26,7 @@
       height: 100%;
       margin: 0;
       overflow: hidden;
-      background: radial-gradient(circle at top, #171722 0%, var(--bg) 60%, #060608 100%);
+      background: radial-gradient(circle at top left, #151924 0%, var(--bg) 58%, #020306 100%);
       color: var(--text);
       font-family: "Segoe UI", Inter, Roboto, Arial, sans-serif;
     }
@@ -32,15 +35,16 @@
       display: grid;
       place-items: center;
       padding: 2rem;
+      position: relative;
     }
 
     .frame {
-      width: min(92vw, 1100px);
-      height: min(92vh, 760px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 24px;
-      background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
-      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.45);
+      width: min(93vw, 1150px);
+      height: min(93vh, 780px);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      box-shadow: var(--shadow);
       backdrop-filter: blur(18px);
       display: grid;
       place-items: center;
@@ -52,8 +56,8 @@
       content: "";
       position: absolute;
       inset: 0;
-      background-image: radial-gradient(circle at 20% 20%, rgba(79, 124, 255, 0.16), transparent 26%),
-                        radial-gradient(circle at 80% 80%, rgba(122, 85, 255, 0.14), transparent 24%);
+      background-image: radial-gradient(circle at 20% 20%, rgba(126, 177, 255, 0.16), transparent 24%),
+                        radial-gradient(circle at 85% 80%, rgba(79, 124, 255, 0.14), transparent 28%);
       pointer-events: none;
     }
 
@@ -62,81 +66,297 @@
       z-index: 1;
       text-align: center;
       user-select: none;
+      transition: transform 0.25s ease, opacity 0.25s ease;
     }
 
     .timer {
-      font-size: clamp(4.5rem, 18vw, 12rem);
+      font-size: clamp(4rem, 18vw, 11.5rem);
       line-height: 0.95;
       font-weight: 700;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.08em;
       font-variant-numeric: tabular-nums;
-      text-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
-      transition: color 0.3s ease, transform 0.3s ease;
+      text-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      transition: color 0.25s ease, transform 0.25s ease;
     }
 
     .status {
       margin-top: 1rem;
       font-size: 0.95rem;
-      letter-spacing: 0.28em;
+      letter-spacing: 0.32em;
       text-transform: uppercase;
       color: var(--muted);
-      transition: color 0.3s ease;
+      transition: color 0.25s ease;
     }
 
     body.expired .timer {
       color: var(--expired);
-      transform: scale(1.02);
+      transform: scale(1.01);
     }
 
     body.expired .status {
       color: var(--expired);
     }
 
-    .hint {
+    .settings-toggle {
       position: absolute;
-      bottom: 1.25rem;
-      right: 1.25rem;
-      font-size: 0.7rem;
-      letter-spacing: 0.18em;
+      top: 1rem;
+      right: 1rem;
+      z-index: 5;
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      backdrop-filter: blur(10px);
+      transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
+    }
+
+    .settings-toggle:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    body.running .settings-toggle {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.9);
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(2, 3, 6, 0.72);
+      backdrop-filter: blur(14px);
+      display: grid;
+      place-items: center;
+      z-index: 6;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal {
+      width: min(92vw, 420px);
+      padding: 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: rgba(10, 12, 18, 0.96);
+      box-shadow: 0 25px 90px rgba(0, 0, 0, 0.45);
+    }
+
+    .modal h2 {
+      margin: 0 0 0.35rem;
+      font-size: 1rem;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.35);
+      color: var(--muted);
+    }
+
+    .modal p {
+      margin: 0 0 1rem;
+      color: #cdd4e2;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .inputs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.7rem;
+      margin-bottom: 1rem;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .field label {
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .field input {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      padding: 0.8rem 0.7rem;
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .field input:focus {
+      border-color: var(--accent);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .field input::-webkit-outer-spin-button,
+    .field input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .field input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.7rem;
+      margin-top: 0.35rem;
+    }
+
+    .btn {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.8rem 1rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      background: rgba(255,255,255,0.04);
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.24);
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+      border-color: transparent;
+      color: white;
+    }
+
+    .btn.primary:hover {
+      filter: brightness(1.08);
+    }
+
+    .status-message {
+      min-height: 1.2rem;
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--accent);
+    }
+
+    .status-message.error {
+      color: var(--expired);
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 1rem;
+      }
+
+      .modal {
+        padding: 1.2rem;
+      }
+
+      .inputs {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
     }
   </style>
 </head>
 <body>
   <div class="frame">
+    <button id="settingsToggle" class="settings-toggle" aria-label="Open timer settings" title="Timer settings">⚙</button>
+
     <div class="content">
-      <div id="timer" class="timer">10:00</div>
+      <div id="timer" class="timer">00:10:00</div>
       <div id="status" class="status">TIME REMAINING</div>
     </div>
-    <div class="hint">absolute timer</div>
+
+    <div id="overlay" class="overlay" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <h2 id="modalTitle">Timer Setup</h2>
+        <p>Choose a custom countdown and start the absolute real-time clock.</p>
+
+        <div class="inputs">
+          <div class="field">
+            <label for="hours">Hours</label>
+            <input id="hours" type="number" min="0" max="99" step="1" value="0" inputmode="numeric" />
+          </div>
+          <div class="field">
+            <label for="minutes">Minutes</label>
+            <input id="minutes" type="number" min="0" max="59" step="1" value="10" inputmode="numeric" />
+          </div>
+          <div class="field">
+            <label for="seconds">Seconds</label>
+            <input id="seconds" type="number" min="0" max="59" step="1" value="0" inputmode="numeric" />
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="startBtn" class="btn primary" type="button">Start</button>
+          <button id="resetBtn" class="btn" type="button">Reset / Stop</button>
+        </div>
+        <div id="message" class="status-message" aria-live="polite"></div>
+      </div>
+    </div>
   </div>
 
   <script>
     // ------------------------------------------------------------------
     // Configuration
     // ------------------------------------------------------------------
-    // Change this value to alter the default countdown duration.
-    // The timer is stored as an absolute timestamp in localStorage.
+    // Update this default value if you want a different initial duration.
     const CONFIG = {
-      durationMinutes: 10,
+      defaultHours: 0,
+      defaultMinutes: 10,
+      defaultSeconds: 0,
       storageKey: "wallpaper-absolute-timer-end-time"
     };
 
     const timerEl = document.getElementById("timer");
     const statusEl = document.getElementById("status");
-    const durationMs = CONFIG.durationMinutes * 60 * 1000;
+    const overlayEl = document.getElementById("overlay");
+    const settingsToggleEl = document.getElementById("settingsToggle");
+    const hoursEl = document.getElementById("hours");
+    const minutesEl = document.getElementById("minutes");
+    const secondsEl = document.getElementById("seconds");
+    const startBtnEl = document.getElementById("startBtn");
+    const resetBtnEl = document.getElementById("resetBtn");
+    const messageEl = document.getElementById("message");
 
     let timerIntervalId = null;
 
     // ------------------------------------------------------------------
     // Utility helpers
     // ------------------------------------------------------------------
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
     function formatDuration(totalSeconds) {
       const safeSeconds = Math.max(0, totalSeconds);
-      const minutes = Math.floor(safeSeconds / 60);
+      const hours = Math.floor(safeSeconds / 3600);
+      const minutes = Math.floor((safeSeconds % 3600) / 60);
       const seconds = safeSeconds % 60;
-      return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
     }
 
     function getStoredEndTime() {
@@ -157,21 +377,48 @@
       }
     }
 
-    function getTargetEndTime() {
-      let endTime = getStoredEndTime();
-
-      if (!endTime || Number.isNaN(endTime)) {
-        endTime = Date.now() + durationMs;
-        setStoredEndTime(endTime);
+    function clearStoredEndTime() {
+      try {
+        localStorage.removeItem(CONFIG.storageKey);
+      } catch (error) {
+        console.warn("Unable to clear timer end time from localStorage.", error);
       }
+    }
 
-      return endTime;
+    function getInputDurationMs() {
+      const hours = clamp(parseInt(hoursEl.value, 10) || 0, 0, 99);
+      const minutes = clamp(parseInt(minutesEl.value, 10) || 0, 0, 59);
+      const seconds = clamp(parseInt(secondsEl.value, 10) || 0, 0, 59);
+      return (((hours * 60) + minutes) * 60 + seconds) * 1000;
+    }
+
+    function setMessage(text, isError = false) {
+      messageEl.textContent = text;
+      messageEl.classList.toggle("error", isError);
+    }
+
+    function openModal() {
+      overlayEl.classList.add("open");
+      overlayEl.setAttribute("aria-hidden", "false");
+      setMessage("");
+    }
+
+    function closeModal() {
+      overlayEl.classList.remove("open");
+      overlayEl.setAttribute("aria-hidden", "true");
+    }
+
+    function renderNeutral() {
+      timerEl.textContent = formatDuration((CONFIG.defaultHours * 3600) + (CONFIG.defaultMinutes * 60) + CONFIG.defaultSeconds);
+      statusEl.textContent = "READY TO START";
+      document.body.classList.remove("expired", "running");
     }
 
     function renderExpired() {
-      timerEl.textContent = "00:00";
+      timerEl.textContent = "00:00:00";
       statusEl.textContent = "TIMER EXPIRED";
       document.body.classList.add("expired");
+      document.body.classList.remove("running");
     }
 
     function renderRemaining(endTime) {
@@ -186,18 +433,27 @@
       timerEl.textContent = formatDuration(remainingSeconds);
       statusEl.textContent = "TIME REMAINING";
       document.body.classList.remove("expired");
+      document.body.classList.add("running");
       return true;
     }
 
-    function startTimer() {
-      const endTime = getTargetEndTime();
+    function startTimerFromInputs() {
+      const durationMs = getInputDurationMs();
 
-      // Render immediately so the UI is up to date right away.
-      if (!renderRemaining(endTime)) {
+      if (durationMs <= 0) {
+        setMessage("Enter a time greater than zero.", true);
         return;
       }
 
-      // Update every second using the absolute target time.
+      const endTime = Date.now() + durationMs;
+      setStoredEndTime(endTime);
+      closeModal();
+      setMessage("");
+      renderRemaining(endTime);
+      syncInterval(endTime);
+    }
+
+    function syncInterval(endTime) {
       if (timerIntervalId) {
         clearInterval(timerIntervalId);
       }
@@ -210,13 +466,61 @@
       }, 1000);
     }
 
-    // Start the timer on page load.
-    document.addEventListener("DOMContentLoaded", startTimer);
+    function resetTimer() {
+      clearStoredEndTime();
+      if (timerIntervalId) {
+        clearInterval(timerIntervalId);
+        timerIntervalId = null;
+      }
+      renderNeutral();
+      closeModal();
+      setMessage("Timer stopped. Configure a new countdown.");
+      hoursEl.value = String(CONFIG.defaultHours).padStart(2, "0");
+      minutesEl.value = String(CONFIG.defaultMinutes).padStart(2, "0");
+      secondsEl.value = String(CONFIG.defaultSeconds).padStart(2, "0");
+    }
 
-    // Keep the timer responsive when the tab regains focus.
+    function initializeFromStorage() {
+      const storedEndTime = getStoredEndTime();
+
+      if (storedEndTime && !Number.isNaN(storedEndTime)) {
+        const remainingMs = storedEndTime - Date.now();
+        if (remainingMs > 0) {
+          renderRemaining(storedEndTime);
+          syncInterval(storedEndTime);
+          return true;
+        }
+
+        renderExpired();
+        return true;
+      }
+
+      renderNeutral();
+      return false;
+    }
+
+    settingsToggleEl.addEventListener("click", openModal);
+    startBtnEl.addEventListener("click", startTimerFromInputs);
+    resetBtnEl.addEventListener("click", resetTimer);
+
+    overlayEl.addEventListener("click", (event) => {
+      if (event.target === overlayEl) {
+        closeModal();
+      }
+    });
+
     window.addEventListener("focus", () => {
-      const endTime = getTargetEndTime();
-      renderRemaining(endTime);
+      const storedEndTime = getStoredEndTime();
+      if (storedEndTime && !Number.isNaN(storedEndTime)) {
+        renderRemaining(storedEndTime);
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      hoursEl.value = String(CONFIG.defaultHours).padStart(2, "0");
+      minutesEl.value = String(CONFIG.defaultMinutes).padStart(2, "0");
+      secondsEl.value = String(CONFIG.defaultSeconds).padStart(2, "0");
+      initializeFromStorage();
     });
   </script>
 </body>
