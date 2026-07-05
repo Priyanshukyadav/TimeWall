@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Absolute Wallpaper Timer</title>
+  <style>
+    :root {
+      --bg: #0d0d11;
+      --bg-accent: #16161d;
+      --text: #f5f7fb;
+      --muted: #7d8292;
+      --accent: #4f7cff;
+      --expired: #ff5d5d;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: radial-gradient(circle at top, #171722 0%, var(--bg) 60%, #060608 100%);
+      color: var(--text);
+      font-family: "Segoe UI", Inter, Roboto, Arial, sans-serif;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+    }
+
+    .frame {
+      width: min(92vw, 1100px);
+      height: min(92vh, 760px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(18px);
+      display: grid;
+      place-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .frame::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle at 20% 20%, rgba(79, 124, 255, 0.16), transparent 26%),
+                        radial-gradient(circle at 80% 80%, rgba(122, 85, 255, 0.14), transparent 24%);
+      pointer-events: none;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      user-select: none;
+    }
+
+    .timer {
+      font-size: clamp(4.5rem, 18vw, 12rem);
+      line-height: 0.95;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    .status {
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: color 0.3s ease;
+    }
+
+    body.expired .timer {
+      color: var(--expired);
+      transform: scale(1.02);
+    }
+
+    body.expired .status {
+      color: var(--expired);
+    }
+
+    .hint {
+      position: absolute;
+      bottom: 1.25rem;
+      right: 1.25rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <div class="content">
+      <div id="timer" class="timer">10:00</div>
+      <div id="status" class="status">TIME REMAINING</div>
+    </div>
+    <div class="hint">absolute timer</div>
+  </div>
+
+  <script>
+    // ------------------------------------------------------------------
+    // Configuration
+    // ------------------------------------------------------------------
+    // Change this value to alter the default countdown duration.
+    // The timer is stored as an absolute timestamp in localStorage.
+    const CONFIG = {
+      durationMinutes: 10,
+      storageKey: "wallpaper-absolute-timer-end-time"
+    };
+
+    const timerEl = document.getElementById("timer");
+    const statusEl = document.getElementById("status");
+    const durationMs = CONFIG.durationMinutes * 60 * 1000;
+
+    let timerIntervalId = null;
+
+    // ------------------------------------------------------------------
+    // Utility helpers
+    // ------------------------------------------------------------------
+    function formatDuration(totalSeconds) {
+      const safeSeconds = Math.max(0, totalSeconds);
+      const minutes = Math.floor(safeSeconds / 60);
+      const seconds = safeSeconds % 60;
+      return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    }
+
+    function getStoredEndTime() {
+      try {
+        const raw = localStorage.getItem(CONFIG.storageKey);
+        return raw ? Number(raw) : null;
+      } catch (error) {
+        console.warn("Unable to read timer end time from localStorage.", error);
+        return null;
+      }
+    }
+
+    function setStoredEndTime(endTime) {
+      try {
+        localStorage.setItem(CONFIG.storageKey, String(endTime));
+      } catch (error) {
+        console.warn("Unable to write timer end time to localStorage.", error);
+      }
+    }
+
+    function getTargetEndTime() {
+      let endTime = getStoredEndTime();
+
+      if (!endTime || Number.isNaN(endTime)) {
+        endTime = Date.now() + durationMs;
+        setStoredEndTime(endTime);
+      }
+
+      return endTime;
+    }
+
+    function renderExpired() {
+      timerEl.textContent = "00:00";
+      statusEl.textContent = "TIMER EXPIRED";
+      document.body.classList.add("expired");
+    }
+
+    function renderRemaining(endTime) {
+      const remainingMs = endTime - Date.now();
+      const remainingSeconds = Math.ceil(remainingMs / 1000);
+
+      if (remainingSeconds <= 0) {
+        renderExpired();
+        return false;
+      }
+
+      timerEl.textContent = formatDuration(remainingSeconds);
+      statusEl.textContent = "TIME REMAINING";
+      document.body.classList.remove("expired");
+      return true;
+    }
+
+    function startTimer() {
+      const endTime = getTargetEndTime();
+
+      // Render immediately so the UI is up to date right away.
+      if (!renderRemaining(endTime)) {
+        return;
+      }
+
+      // Update every second using the absolute target time.
+      if (timerIntervalId) {
+        clearInterval(timerIntervalId);
+      }
+
+      timerIntervalId = window.setInterval(() => {
+        if (!renderRemaining(endTime)) {
+          clearInterval(timerIntervalId);
+          timerIntervalId = null;
+        }
+      }, 1000);
+    }
+
+    // Start the timer on page load.
+    document.addEventListener("DOMContentLoaded", startTimer);
+
+    // Keep the timer responsive when the tab regains focus.
+    window.addEventListener("focus", () => {
+      const endTime = getTargetEndTime();
+      renderRemaining(endTime);
+    });
+  </script>
+</body>
+</html>
